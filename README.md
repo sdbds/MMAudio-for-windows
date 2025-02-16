@@ -1,7 +1,7 @@
 <div align="center">
 <p align="center">
   <h2>MMAudio</h2>
-  <a href="https://github.com/hkchengrex/MMAudio/releases/download/v0.1/mmaudio.pdf">Paper (temporary; arXiv pending)</a> | <a href="https://hkchengrex.github.io/MMAudio">Webpage</a> | <a href="https://huggingface.co/hkchengrex/MMAudio/tree/main">Models</a> | <a href="https://huggingface.co/spaces/hkchengrex/MMAudio"> Huggingface Demo</a> | <a href="https://colab.research.google.com/drive/1TAaXCY2-kPk4xE4PwKB3EqFbSnkUuzZ8?usp=sharing">Colab Demo</a> | <a href="https://replicate.com/zsxkib/mmaudio">Replicate Demo</a>
+  <a href="https://arxiv.org/abs/2412.15322">Paper</a> | <a href="https://hkchengrex.github.io/MMAudio">Webpage</a> | <a href="https://huggingface.co/hkchengrex/MMAudio/tree/main">Models</a> | <a href="https://huggingface.co/spaces/hkchengrex/MMAudio"> Huggingface Demo</a> | <a href="https://colab.research.google.com/drive/1TAaXCY2-kPk4xE4PwKB3EqFbSnkUuzZ8?usp=sharing">Colab Demo</a> | <a href="https://replicate.com/zsxkib/mmaudio">Replicate Demo</a>
 </p>
 </div>
 
@@ -10,8 +10,6 @@
 [Ho Kei Cheng](https://hkchengrex.github.io/), [Masato Ishii](https://scholar.google.co.jp/citations?user=RRIO1CcAAAAJ), [Akio Hayakawa](https://scholar.google.com/citations?user=sXAjHFIAAAAJ), [Takashi Shibuya](https://scholar.google.com/citations?user=XCRO260AAAAJ), [Alexander Schwing](https://www.alexander-schwing.de/), [Yuki Mitsufuji](https://www.yukimitsufuji.com/)
 
 University of Illinois Urbana-Champaign, Sony AI, and Sony Group Corporation
-
-**Note: This repository is still under construction. Single-example inference should work as expected. The training code will be added. Code is subject to non-backward-compatible changes.**
 
 ## Highlight
 
@@ -37,11 +35,6 @@ https://github.com/user-attachments/assets/29230d4e-21c1-4cf8-a221-c28f2af6d0ca
 
 For more results, visit https://hkchengrex.com/MMAudio/video_main.html.
 
-## Update Logs
-
-- 2024-12-14: Removed the `ffmpeg<7` requirement for the demos by replacing `torio.io.StreamingMediaDecoder` with `pyav` for reading frames. The read frames are also cached, so we are not reading the same frames again during reconstruction. This should speed things up and make installation less of a hassle.
-- 2024-12-13: Improved for-loop processing in CLIP/Sync feature extraction by introducing a batch size multiplier. We can approximately use 40x batch size for CLIP/Sync without using more memory, thereby speeding up processing. Removed VAE encoder during inference -- we don't need it.
-- 2024-12-11: Replaced `torio.io.StreamingMediaDecoder` with `pyav` for reading framerate when reconstructing the input video. `torio.io.StreamingMediaDecoder` does not work reliably in huggingface ZeroGPU's environment, and I suspect that it might not work in some other environments as well.
 
 ## Installation
 
@@ -88,51 +81,7 @@ pip install -e .
 
 The models will be downloaded automatically when you run the demo script. MD5 checksums are provided in `mmaudio/utils/download_utils.py`.
 The models are also available at https://huggingface.co/hkchengrex/MMAudio/tree/main
-
-| Model    | Download link | File size |
-| -------- | ------- | ------- |
-| Flow prediction network, small 16kHz | <a href="https://huggingface.co/hkchengrex/MMAudio/resolve/main/weights/mmaudio_small_16k.pth" download="mmaudio_small_16k.pth">mmaudio_small_16k.pth</a> | 601M |
-| Flow prediction network, small 44.1kHz | <a href="https://huggingface.co/hkchengrex/MMAudio/resolve/main/weights/mmaudio_small_44k.pth" download="mmaudio_small_44k.pth">mmaudio_small_44k.pth</a> | 601M |
-| Flow prediction network, medium 44.1kHz | <a href="https://huggingface.co/hkchengrex/MMAudio/resolve/main/weights/mmaudio_medium_44k.pth" download="mmaudio_medium_44k.pth">mmaudio_medium_44k.pth</a> | 2.4G |
-| Flow prediction network, large 44.1kHz | <a href="https://huggingface.co/hkchengrex/MMAudio/resolve/main/weights/mmaudio_large_44k.pth" download="mmaudio_large_44k.pth">mmaudio_large_44k.pth</a> | 3.9G |
-| Flow prediction network, large 44.1kHz, v2 **(recommended)** | <a href="https://huggingface.co/hkchengrex/MMAudio/resolve/main/weights/mmaudio_large_44k_v2.pth" download="mmaudio_large_44k_v2.pth">mmaudio_large_44k_v2.pth</a> | 3.9G |
-| 16kHz VAE | <a href="https://github.com/hkchengrex/MMAudio/releases/download/v0.1/v1-16.pth">v1-16.pth</a> | 655M |
-| 16kHz BigVGAN vocoder (from Make-An-Audio 2) |<a href="https://github.com/hkchengrex/MMAudio/releases/download/v0.1/best_netG.pt">best_netG.pt</a> | 429M |
-| 44.1kHz VAE |<a href="https://github.com/hkchengrex/MMAudio/releases/download/v0.1/v1-44.pth">v1-44.pth</a> | 1.2G | 
-| Synchformer visual encoder |<a href="https://github.com/hkchengrex/MMAudio/releases/download/v0.1/synchformer_state_dict.pth">synchformer_state_dict.pth</a> | 907M |
-
-To run the model, you need four components: a flow prediction network, visual feature extractors (Synchformer and CLIP, CLIP will be downloaded automatically), a VAE, and a vocoder. VAEs and vocoders are specific to the sampling rate (16kHz or 44.1kHz) and not model sizes. 
-The 44.1kHz vocoder will be downloaded automatically.
-
-The expected directory structure (full):
-
-```bash
-MMAudio
-├── ext_weights
-│   ├── best_netG.pt
-│   ├── synchformer_state_dict.pth
-│   ├── v1-16.pth
-│   └── v1-44.pth
-├── weights
-│   ├── mmaudio_small_16k.pth
-│   ├── mmaudio_small_44k.pth
-│   ├── mmaudio_medium_44k.pth
-│   ├── mmaudio_large_44k.pth
-│   └── mmaudio_large_44k_v2.pth
-└── ...
-```
-
-The expected directory structure (minimal, for the recommended model only):
-
-```bash
-MMAudio
-├── ext_weights
-│   ├── synchformer_state_dict.pth
-│   └── v1-44.pth
-├── weights
-│   └── mmaudio_large_44k_v2.pth
-└── ...
-```
+See [MODELS.md](docs/MODELS.md) for more details.
 
 ## Demo
 
@@ -154,7 +103,9 @@ The default output (and training) duration is 8 seconds. Longer/shorter duration
 
 ### Gradio interface
 
-Supports video-to-audio and text-to-audio synthesis. Use [port forwarding](https://unix.stackexchange.com/questions/115897/whats-ssh-port-forwarding-and-whats-the-difference-between-ssh-local-and-remot) (e.g., `ssh -L 7860:localhost:7860 server`) if necessary. The default port is `7860` which you can change in `gradio_demo.py`.
+Supports video-to-audio and text-to-audio synthesis.
+You can also try experimental image-to-audio synthesis which duplicates the input image to a video for processing. This might be interesting to some but it is not something MMAudio has been trained for.
+Use [port forwarding](https://unix.stackexchange.com/questions/115897/whats-ssh-port-forwarding-and-whats-the-difference-between-ssh-local-and-remot) (e.g., `ssh -L 7860:localhost:7860 server`) if necessary. The default port is `7860` which you can specify with `--port`.
 
 ```bash
 python gradio_demo.py
@@ -163,7 +114,7 @@ python gradio_demo.py
 ### FAQ
 
 1. Video processing
-    - Processing higher-resolution videos takes longer due to encoding and decoding, but it does not improve the quality of results.
+    - Processing higher-resolution videos takes longer due to encoding and decoding (which can take >95% of the processing time!), but it does not improve the quality of results.
     - The CLIP encoder resizes input frames to 384×384 pixels. 
     - Synchformer resizes the shorter edge to 224 pixels and applies a center crop, focusing only on the central square of each frame.
 2. Frame rates
@@ -185,20 +136,27 @@ We believe all of these three limitations can be addressed with more high-qualit
 
 ## Training
 
-Work in progress.
+See [TRAINING.md](docs/TRAINING.md).
 
 ## Evaluation
 
-Work in progress.
+See [EVAL.md](docs/EVAL.md).
 
 ## Training Datasets
 
 MMAudio was trained on several datasets, including [AudioSet](https://research.google.com/audioset/), [Freesound](https://github.com/LAION-AI/audio-dataset/blob/main/laion-audio-630k/README.md), [VGGSound](https://www.robots.ox.ac.uk/~vgg/data/vggsound/), [AudioCaps](https://audiocaps.github.io/), and [WavCaps](https://github.com/XinhaoMei/WavCaps). These datasets are subject to specific licenses, which can be accessed on their respective websites. We do not guarantee that the pre-trained models are suitable for commercial use. Please use them at your own risk.
 
+## Update Logs
+
+- 2024-12-23: Added training and batch evaluation scripts.
+- 2024-12-14: Removed the `ffmpeg<7` requirement for the demos by replacing `torio.io.StreamingMediaDecoder` with `pyav` for reading frames. The read frames are also cached, so we are not reading the same frames again during reconstruction. This should speed things up and make installation less of a hassle.
+- 2024-12-13: Improved for-loop processing in CLIP/Sync feature extraction by introducing a batch size multiplier. We can approximately use 40x batch size for CLIP/Sync without using more memory, thereby speeding up processing. Removed VAE encoder during inference -- we don't need it.
+- 2024-12-11: Replaced `torio.io.StreamingMediaDecoder` with `pyav` for reading framerate when reconstructing the input video. `torio.io.StreamingMediaDecoder` does not work reliably in huggingface ZeroGPU's environment, and I suspect that it might not work in some other environments as well.
+
 ## Citation
 
 ```bibtex
-@inproceedings{cheng2024putting,
+@inproceedings{cheng2024taming,
   title={Taming Multimodal Joint Training for High-Quality Video-to-Audio Synthesis},
   author={Cheng, Ho Kei and Ishii, Masato and Hayakawa, Akio and Shibuya, Takashi and Schwing, Alexander and Mitsufuji, Yuki},
   booktitle={arXiv},
@@ -206,10 +164,18 @@ MMAudio was trained on several datasets, including [AudioSet](https://research.g
 }
 ```
 
+## Relevant Repositories
+
+- [av-benchmark](https://github.com/hkchengrex/av-benchmark) for benchmarking results.
+
+## Disclaimer
+
+We have no affiliation with and have no knowledge of the party behind the domain "mmaudio.net".
+
 ## Acknowledgement
 
 Many thanks to:
 - [Make-An-Audio 2](https://github.com/bytedance/Make-An-Audio-2) for the 16kHz BigVGAN pretrained model and the VAE architecture
 - [BigVGAN](https://github.com/NVIDIA/BigVGAN)
 - [Synchformer](https://github.com/v-iashin/Synchformer) 
-- [EDM2](https://github.com/NVlabs/edm2) for the magnitude-preserving network architecture
+- [EDM2](https://github.com/NVlabs/edm2) for the magnitude-preserving VAE network architecture
